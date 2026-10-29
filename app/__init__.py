@@ -1,0 +1,1 @@
+"""SentraGuard Lite application package."""

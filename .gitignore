@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.DS_Store
+out.json
+.streamlit/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Assignment reference PDFs (proprietary course material)
+*.pdf
