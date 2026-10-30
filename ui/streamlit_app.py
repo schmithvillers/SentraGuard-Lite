@@ -238,7 +238,11 @@ with right:
             st.caption("No detector findings.")
 
         st.markdown("**Sanitized prompt**")
-        st.code(str(sanitized_prompt) or "(empty)", language=None)
+        st.code(
+            str(sanitized_prompt) or "(empty)",
+            language=None,
+            wrap_lines=True,
+        )
 
         st.markdown("**Sanitized context documents**")
         if isinstance(sanitized_docs, list) and sanitized_docs:
@@ -249,7 +253,11 @@ with right:
                     f"{document.get('id', f'doc-{index + 1}')}",
                     expanded=False,
                 ):
-                    st.code(str(document.get("text", "")) or "(empty)", language=None)
+                    st.code(
+                        str(document.get("text", "")) or "(empty)",
+                        language=None,
+                        wrap_lines=True,
+                    )
         else:
             st.caption("No context documents were supplied.")
 
