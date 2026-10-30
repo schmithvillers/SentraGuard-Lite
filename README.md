@@ -1,51 +1,6 @@
 # SentraGuard Lite
 
-SentraGuard Lite is a small, deterministic, offline GenAI guardrails gateway. It
-accepts a user prompt and zero or more retrieved context documents, detects
-prompt injection, PII, and RAG injection, computes a risk score from 0–100, and
-applies an `allow` / `transform` / `block` policy. Sanitized output is returned
-in a structured JSON response.
-
-The project was built for the SOAISEC "Guardrails Gateway Mini" take-home
-assignment. It requires no external LLM, paid service, API key, or Internet
-connection for core analysis.
-
-## Problem and motivation
-
-Applications that combine an LLM with retrieval-augmented generation (RAG) have
-two trust boundaries: the user prompt and the retrieved documents. A retrieved
-document is not automatically trustworthy; it may contain instructions that try
-to override the application's policy. A user prompt may also contain
-jailbreak attempts or sensitive data that should not be forwarded or logged.
-
-SentraGuard Lite demonstrates a pragmatic first line of defense:
-
-- deterministic, explainable rules rather than a black-box model;
-- independent analysis of the prompt and each retrieved document;
-- PII redaction before content is returned;
-- a policy decision that is separate from HTTP handling;
-- a reproducible API, CLI, UI, and Docker setup.
-
-## Key features
-
-- **Exactly two API routes**: `POST /analyze` and `GET /policy`.
-- **Prompt-injection detection** for instruction override, system-prompt
-  exfiltration, DAN-style jailbreaks, safety bypass, and instruction-hierarchy
-  manipulation.
-- **PII detection and redaction** for email addresses and common formatted phone
-  numbers, using the mandated `[REDACTED_EMAIL]` and `[REDACTED_PHONE]`
-  placeholders.
-- **RAG-injection detection** for fake system/developer headers, policy
-  overrides, secret exfiltration, and external data-sending instructions.
-- **Deterministic scoring** with transparent weights and the mandated 40/80
-  thresholds.
-- **Sanitized output** that preserves context document ids and ordering.
-- **CLI** that calls the running API rather than importing detector code.
-- **Streamlit UI** with prompt, metadata, 0–3 context documents, decision,
-  score, tags, reasons, sanitized content, and raw JSON.
-- **Docker Compose** setup for the API and UI.
-- **76 pytest tests** covering detectors, scoring, policy, API contracts,
-  sanitization, determinism, and CLI behavior.
+Check out out - https://sentra-guard-lite.streamlit.app/
 
 ## Architecture
 
@@ -76,50 +31,6 @@ The prompt and each context document are analyzed independently. Findings are
 combined by a pure scoring function, and a pure policy function maps the score
 to a decision. Sanitization is applied before the response is built, including
 for blocked requests, so raw PII is not returned in sanitized fields.
-
-### Repository structure
-
-```text
-.
-├── app/
-│   ├── main.py                 # FastAPI entrypoint, exactly two routes
-│   ├── schemas.py              # Pydantic request/response models
-│   └── core/
-│       ├── analyzer.py         # End-to-end pipeline
-│       ├── config.py           # Policy version, thresholds, weights
-│       ├── models.py           # Internal Finding/PIIMatch dataclasses
-│       ├── normalization.py    # Unicode/whitespace normalization
-│       ├── patterns.py         # Readable injection rule definitions
-│       ├── prompt_injection.py
-│       ├── pii.py
-│       ├── rag_injection.py
-│       ├── sanitizer.py
-│       ├── scoring.py
-│       └── policy.py
-├── ui/
-│   └── streamlit_app.py
-├── tests/
-│   ├── conftest.py
-│   ├── test_prompt_injection.py
-│   ├── test_pii.py
-│   ├── test_rag_injection.py
-│   ├── test_scoring_policy.py
-│   ├── test_api.py
-│   └── test_cli.py
-├── docs/
-│   ├── design-notes.md
-│   └── requirements-traceability.md
-├── cli.py
-├── sample_request.json
-├── requirements.api.txt
-├── requirements.ui.txt
-├── Dockerfile.api
-├── Dockerfile.ui
-├── docker-compose.yml
-├── .dockerignore
-├── .gitignore
-└── README.md
-```
 
 ## Prerequisites
 
@@ -361,64 +272,6 @@ Run inside the API container:
 docker compose run --rm api pytest -q
 ```
 
-The suite is deterministic and does not require a running external service. API
-tests use FastAPI's `TestClient`; CLI tests mock the HTTP call. The suite covers
-the required detector, redaction, API, policy, and end-to-end cases plus
-additional edge cases such as threshold boundaries, duplicate findings,
-determinism, and sensitive-data leakage.
-
-### Verification status
-
-Verified in the development environment used to prepare this repository:
-
-- `pytest -q` → **76 passed** (one third-party Starlette/anyio deprecation
-  warning).
-- `docker compose up --build` → both images built; API healthy; UI started.
-- `docker compose run --rm api pytest -q` → **76 passed**.
-- Live `GET /policy` → exact required JSON.
-- Live `POST /analyze` → `allow`, `transform`, and `block` examples observed.
-- Exact CLI command → exit 0 and valid `out.json`.
-- Streamlit `AppTest` inside the UI container → API reached over
-  `http://api:8000`, block decision rendered.
-- `/docs`, `/redoc`, `/openapi.json`, and `/health` → HTTP 404; exactly two
-  routes exist.
-
-
-## Risk-scoring methodology
-
-Scores are integers from 0 to 100. The thresholds are inclusive:
-
-- `risk_score >= 80` → `block`
-- `risk_score >= 40` → `transform`
-- otherwise → `allow`
-
-Weights are defined centrally in `app/core/config.py`:
-
-| Detector | Finding type | Weight / rule |
-| --- | --- | --- |
-| Prompt injection | Critical | 80 |
-| Prompt injection | High | 55 |
-| Prompt injection | Medium | 40 |
-| RAG injection | Critical | 80 |
-| RAG injection | High | 55 |
-| RAG injection | Fake system header | 55 |
-| PII | First occurrence | 40 |
-| PII | Each additional occurrence | +10, capped at 60 |
-
-Within prompt-injection and RAG-injection categories, distinct rule weights are
-summed and capped at 100. For RAG, the same rule in two different documents is
-counted separately because those are independent retrieved sources. PII is
-counted across the prompt and all documents, then capped at 60 so PII alone can
-never block. The total is `min(100, prompt + rag + pii)`.
-
-Examples:
-
-- A single critical injection (80) blocks.
-- A single medium injection (40) transforms.
-- PII only (40) transforms and is redacted.
-- Critical injection plus PII (80 + 40) blocks at 100.
-- Repeated matches of the same rule in one text do not inflate the score.
-
 The full rationale and tradeoffs are in
 [`docs/design-notes.md`](docs/design-notes.md).
 
@@ -444,33 +297,3 @@ This is a rule-based prototype, not a production-grade security control.
   text in the same sentence.
 - The gateway does not inspect images, audio, tool calls, or model outputs.
 
-## Security and privacy considerations
-
-- No secrets, API keys, or external LLM calls are required or committed.
-- No prompts, documents, or responses are persisted to disk or a database.
-- Logs contain only the request id (sanitized and truncated), decision, score,
-  and risk tags. Raw prompts and PII are not logged.
-- PII evidence in `reasons` contains counts only, never the original value.
-- Blocked responses still return sanitized content, so PII is not exposed through
-  fields intended for sanitized output.
-- The API has no authentication, rate limiting, or request-size limits. It should
-  not be exposed directly to the public Internet without adding those controls,
-  TLS, and an audit trail.
-- The Docker images run as a non-root user and contain only the runtime files
-  needed for each service.
-
-## Design notes
-
-See [`docs/design-notes.md`](docs/design-notes.md) for architectural decisions,
-the scoring formula, policy rules, sanitization behavior, false positives and
-false negatives, security assumptions, known limitations, and production
-hardening ideas.
-
-## AI-tool usage disclosure
-
-AI assistance was used for initial project scaffolding, regex pattern drafting,
-test generation, and documentation drafting. The implementation was reviewed and
-executed: the test suite, live API examples, CLI invocation, Streamlit flow, and
-Docker workflow were run during development. The submitter should be able to
-explain the detector rules, scoring weights, policy thresholds, sanitization
-behavior, and the two-endpoint API contract.
