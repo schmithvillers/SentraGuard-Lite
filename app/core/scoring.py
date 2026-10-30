@@ -1,16 +1,4 @@
-"""Deterministic risk scoring.
 
-Formula
--------
-* Prompt-injection score: sum of distinct prompt rule weights, capped at 100.
-* RAG-injection score: sum of distinct (rule, document) weights, capped at 100.
-* PII score: 40 for the first occurrence, +10 for each additional occurrence,
-  capped at 60.  PII alone therefore never blocks.
-* Total: min(100, prompt + rag + pii).
-
-The caps prevent repeated matches from producing unbounded scores, and the
-per-rule deduplication prevents the same finding from being counted twice.
-"""
 
 from __future__ import annotations
 
