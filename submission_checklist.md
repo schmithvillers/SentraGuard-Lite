@@ -46,14 +46,7 @@ https://sentra-guard-lite.streamlit.app/
 ## 2. Tests
 
 ### 2.1 Ten required pytest tests included
-
-- [ ] At least ten meaningful pytest tests are included.
-- [ ] Tests cover the required core behavior and assignment scenarios.
-
-**Evidence to add:**
-- Test directory: `tests/`
-- Test files: `[LIST ACTUAL TEST FILES HERE]`
-- Test count / collection output: `screenshots/tests/pytest-collection.png`
+Test Files: /tests/*
 
 ### 2.2 Tests pass locally or in Docker
 
