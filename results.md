@@ -98,7 +98,7 @@ Hello, my name is Alex. Please send my account confirmation to [REDACTED_EMAIL].
 **Dashboard screenshot**
 
 ![Test 2: PII detection and redaction of email and phone
-number](screenshots/Screenshot%202026-10-30%20at%201.31.10%20PM.png)
+number](./screenshots/Screenshot%202026-10-30%20at%201.31.10%20PM.png)
 
 **Result: PASS**
 
