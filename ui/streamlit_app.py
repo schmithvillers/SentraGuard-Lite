@@ -11,25 +11,32 @@ import uuid
 
 import requests
 import streamlit as st
-import os
-import streamlit as st
 
-def get_api_base_url():
-    # First, read Streamlit Cloud Secrets
+DEFAULT_API_BASE_URL = "http://api:8000"
+
+
+def get_api_base_url() -> str:
+    """Resolve the API base URL.
+
+    Priority: Streamlit Cloud secrets, then the ``API_BASE_URL`` environment
+    variable, then the Docker Compose service name.
+    """
+
     try:
-        url = st.secrets.get("API_BASE_URL")
+        secret_url = st.secrets.get("API_BASE_URL")
     except Exception:
-        url = None
+        # Accessing st.secrets raises when no secrets.toml is configured,
+        # which is expected for local and Docker runs.
+        secret_url = None
 
-    # Fall back to environment variable
-    if not url:
-        url = os.getenv("API_BASE_URL")
+    for candidate in (secret_url, os.getenv("API_BASE_URL"), DEFAULT_API_BASE_URL):
+        if candidate is None:
+            continue
+        url = str(candidate).strip().rstrip("/")
+        if url:
+            return url
 
-    # Local Docker fallback
-    if not url:
-        url = "http://api:8000"
-
-    return url.rstrip("/")
+    return DEFAULT_API_BASE_URL
 
 
 API_BASE_URL = get_api_base_url()
@@ -107,8 +114,8 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "Set API_BASE_URL to point the UI at another API. "
-        "Under Docker Compose it is http://api:8000."
+        "Resolved from Streamlit secrets, then the API_BASE_URL environment "
+        "variable, then http://api:8000 (Docker Compose)."
     )
 
 st.title("SentraGuard Lite")
