@@ -1,6 +1,6 @@
 # SentraGuard Lite
 
-Check out out - https://sentra-guard-lite.streamlit.app/
+Check it out - https://sentra-guard-lite.streamlit.app/
 
 ## Architecture
 
