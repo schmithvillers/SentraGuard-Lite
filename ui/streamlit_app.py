@@ -11,8 +11,28 @@ import uuid
 
 import requests
 import streamlit as st
+import os
+import streamlit as st
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
+def get_api_base_url():
+    # First, read Streamlit Cloud Secrets
+    try:
+        url = st.secrets.get("API_BASE_URL")
+    except Exception:
+        url = None
+
+    # Fall back to environment variable
+    if not url:
+        url = os.getenv("API_BASE_URL")
+
+    # Local Docker fallback
+    if not url:
+        url = "http://api:8000"
+
+    return url.rstrip("/")
+
+
+API_BASE_URL = get_api_base_url()
 REQUEST_TIMEOUT_SECONDS = 20
 POLICY_TIMEOUT_SECONDS = 3
 
