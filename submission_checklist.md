@@ -32,17 +32,7 @@ the paths below to match the actual files.
 
 ### 1.1 Git repository link or ZIP shared
 
--   [ ] A Git repository link or submission ZIP has been prepared and
-    shared.
-
-**Evidence to add:** - Repository URL: `[PASTE REPOSITORY URL HERE]` -
-OR ZIP file path/name: `[PASTE ZIP PATH OR FILE NAME HERE]` - Optional
-screenshot: `screenshots/[ADD REPOSITORY OR ZIP SCREENSHOT HERE]`
-
-**Verification notes:** Confirm the shared repository/ZIP contains the
-application source, tests, Docker files, README, design notes, sample
-request, and required evidence. Exclude virtual environments, caches,
-secrets, and unrelated files.
+https://github.com/schmithvillers/SentraGuard-Lite
 
 ### 1.2 Working FastAPI service with exactly two specified endpoints
 
