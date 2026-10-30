@@ -1,37 +1,38 @@
-"""Streamlit UI for SentraGuard Lite.
-
-The UI is intentionally thin: it collects a request, calls the FastAPI service,
-and renders the response.  All security logic remains in the API.
-"""
 
 from __future__ import annotations
 
 import os
 import uuid
-
 import requests
 import streamlit as st
+
+st.set_page_config(
+    page_title="SentraGuard Lite",
+    page_icon="🛡️",
+    layout="wide",
+)
+
+# Define and resolve API_BASE_URL below this point.
 
 DEFAULT_API_BASE_URL = "http://api:8000"
 
 
 def get_api_base_url() -> str:
-    """Resolve the API base URL.
-
-    Priority: Streamlit Cloud secrets, then the ``API_BASE_URL`` environment
-    variable, then the Docker Compose service name.
-    """
+    """Resolve the API URL from Streamlit secrets, environment, or Docker."""
 
     try:
         secret_url = st.secrets.get("API_BASE_URL")
     except Exception:
-        # Accessing st.secrets raises when no secrets.toml is configured,
-        # which is expected for local and Docker runs.
         secret_url = None
 
-    for candidate in (secret_url, os.getenv("API_BASE_URL"), DEFAULT_API_BASE_URL):
+    for candidate in (
+        secret_url,
+        os.getenv("API_BASE_URL"),
+        DEFAULT_API_BASE_URL,
+    ):
         if candidate is None:
             continue
+
         url = str(candidate).strip().rstrip("/")
         if url:
             return url
@@ -40,8 +41,10 @@ def get_api_base_url() -> str:
 
 
 API_BASE_URL = get_api_base_url()
+
 REQUEST_TIMEOUT_SECONDS = 20
 POLICY_TIMEOUT_SECONDS = 3
+
 
 st.set_page_config(
     page_title="SentraGuard Lite",
